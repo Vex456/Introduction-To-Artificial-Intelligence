@@ -505,31 +505,58 @@ print(sorted(set(top_none.index) - set(top_stop.index)))
 # In[15]:
 
 
-# --- Home assignment scaffold --------------------------------------------
-# Fill in your own URL lists and run.
+# --- Home Assignment: Comparative Blog Analysis ---------------------------
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import numpy as np
+import time
+import spacy
+from textblob import TextBlob
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 SOURCE_A = {
-    "name": "blog-a",
+    "name": "techncruncher",
     "urls": [
-        # ... ten article URLs ...
+        "https://techncruncher.blogspot.com/2025/12/how-i-get-free-traffic-from-chatgpt-in.html",
+        "https://techncruncher.blogspot.com/2025/01/top-10-ai-tools-that-will-transform.html",
+        "https://techncruncher.blogspot.com/2023/12/limewire-ai-studio-review-2023-details.html",
+        "https://techncruncher.blogspot.com/2023/01/top-10-ai-tools-in-2023-that-will-make.html",
+        "https://techncruncher.blogspot.com/2022/11/top-10-ai-content-generator-writer.html",
+        "https://techncruncher.blogspot.com/2022/03/prowritingaid-vs-grammarly-which.html",
+        "https://techncruncher.blogspot.com/2022/07/top-10-ai-marketing-tools-you-should-use.html",
+        "https://techncruncher.blogspot.com/2022/09/cj-affiliate-ultimate-guide-to.html",
+        "https://techncruncher.blogspot.com/2022/04/what-is-blockchain-everything-you-need.html",
+        "https://techncruncher.blogspot.com/2022/06/most-frequently-asked-questions-about.html"
     ],
     "title_selector":   ("h3", "post-title"),
     "content_selector": ("div", "post-body entry-content"),
 }
 
 SOURCE_B = {
-    "name": "blog-b",
+    "name": "pyfound",
     "urls": [
-        # ... ten article URLs ...
+        "https://pyfound.blogspot.com/2026/10/mark-your-calendars-psf-board-office.html",
+        "https://pyfound.blogspot.com/2026/10/wikis-relaunched.html",
+        "https://pyfound.blogspot.com/2026/10/announcing-python-software-foundation.html",
+        "https://pyfound.blogspot.com/2026/09/python-language-summit-2026.html",
+        "https://pyfound.blogspot.com/2026/09/announcing-2026-psf-board-election.html",
+        "https://pyfound.blogspot.com/2026/09/announcing-2026-python-packaging.html",
+        "https://pyfound.blogspot.com/2026/09/announcing-psf-strategic-plan-2026.html",
+        "https://pyfound.blogspot.com/2026/05/strategic-planning-at-psf.html",
+        "https://pyfound.blogspot.com/2026/06/psf-strategic-plan-2026-draft-open-for.html",
+        "https://pyfound.blogspot.com/2026/07/announcing-2026-psf-grants-program.html"
     ],
-    "title_selector":   ("h1", None),
-    "content_selector": ("div", None),
+    "title_selector":   ("h3", "post-title"),
+    "content_selector": ("div", "post-body entry-content"),
 }
 
 
 def scrape_source(source):
-    """Scrape one source and return a labelled DataFrame."""
+    """Scrape one source and return a labelled DataFrame with error handling."""
     rows = []
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
     for url in source["urls"]:
         try:
             res = requests.get(url, headers=headers, timeout=10)
@@ -538,27 +565,99 @@ def scrape_source(source):
 
             tag, cls = source["title_selector"]
             t = soup.find(tag, class_=cls) if cls else soup.find(tag)
-            title = t.get_text(strip=True) if t else soup.title.get_text(strip=True)
+            title = t.get_text(strip=True) if t else (soup.title.get_text(strip=True) if soup.title else "Untitled")
 
             tag, cls = source["content_selector"]
             block = soup.find(tag, class_=cls) if cls else soup.find(tag)
-            if not block:
-                continue
-            text = " ".join(p.get_text(strip=True) for p in block.find_all("p"))
+            paragraphs = block.find_all("p") if block else soup.find_all("p")
+            text = " ".join(p.get_text(strip=True) for p in paragraphs)
 
-            if len(text) > 100:
+            if len(text) > 80:
                 rows.append({"source": source["name"], "url": url,
                              "title": title, "text": text})
-            time.sleep(1)
+            time.sleep(0.3)
         except Exception as e:
             print(f"[ERROR] {url} -> {e}")
     return pd.DataFrame(rows)
 
 
-# corpus = pd.concat([scrape_source(SOURCE_A), scrape_source(SOURCE_B)], ignore_index=True)
-# corpus.to_csv("two_source_corpus.csv", index=False)
-print("Fill in SOURCE_A and SOURCE_B, then uncomment the last two lines.")
+# Fetch or load cached two-source corpus
+try:
+    if os.path.exists("two_source_corpus.csv"):
+        corpus = pd.read_csv("two_source_corpus.csv")
+        print("Loaded existing two_source_corpus.csv with", len(corpus), "records.")
+    else:
+        corpus = pd.concat([scrape_source(SOURCE_A), scrape_source(SOURCE_B)], ignore_index=True)
+except Exception as e:
+    print(f"Fallback to live scrape due to: {e}")
+    corpus = pd.concat([scrape_source(SOURCE_A), scrape_source(SOURCE_B)], ignore_index=True)
 
+# Feature engineering: sentiment polarity and noun density
+if "noun_density" not in corpus.columns:
+    def extract_metrics(text):
+        doc = nlp(text)
+        tokens = len(doc)
+        nouns = len([t for t in doc if t.pos_ == 'NOUN'])
+        density = (nouns / tokens) if tokens > 0 else 0.0
+        pol = TextBlob(text).sentiment.polarity
+        return pd.Series({'num_tokens': tokens, 'num_nouns': nouns, 'noun_density': density, 'sentiment_polarity': pol})
+
+    metrics_df = corpus['text'].apply(extract_metrics)
+    corpus = pd.concat([corpus[['source', 'url', 'title', 'text']], metrics_df], axis=1)
+    corpus.to_csv("two_source_corpus.csv", index=False)
+
+print(f"\nProcessed corpus shape: {corpus.shape}")
+display(corpus[['source', 'title', 'sentiment_polarity', 'noun_density']].head())
+
+# Group comparison: Mean and standard deviation
+summary = corpus.groupby("source")[["sentiment_polarity", "noun_density"]].agg(["mean", "std", "count"])
+print("\n--- Numerical Comparison by Source ---")
+display(summary)
+
+mean_pol = corpus.groupby("source")["sentiment_polarity"].mean()
+mean_noun = corpus.groupby("source")["noun_density"].mean()
+
+diff_pol = mean_pol["techncruncher"] - mean_pol["pyfound"]
+diff_noun = mean_noun["techncruncher"] - mean_noun["pyfound"]
+
+print(f"Mean Sentiment Polarity Difference (Techncruncher - Pyfound): {diff_pol:+.4f}")
+print(f"Mean Noun Density Difference (Techncruncher - Pyfound):       {diff_noun:+.4f}")
+
+# Grouped bar chart
+summary_plot = pd.DataFrame({
+    "Source": ["techncruncher", "pyfound"] * 2,
+    "Metric": ["Sentiment Polarity"] * 2 + ["Noun Density"] * 2,
+    "Score": [mean_pol["techncruncher"], mean_pol["pyfound"],
+              mean_noun["techncruncher"], mean_noun["pyfound"]]
+})
+
+plt.figure(figsize=(8, 5))
+sns.barplot(data=summary_plot, x="Metric", y="Score", hue="Source", palette=["#2563eb", "#10b981"])
+plt.title("Home Assignment: Mean Sentiment Polarity vs Noun Density by Source", fontweight="bold")
+plt.ylabel("Mean Score")
+plt.ylim(0, max(summary_plot["Score"]) * 1.3)
+for p in plt.gca().patches:
+    h = p.get_height()
+    if h > 0:
+        plt.gca().annotate(f"{h:.3f}", (p.get_x() + p.get_width() / 2., h),
+                           ha='center', va='bottom', fontsize=10, xytext=(0, 4), textcoords='offset points')
+plt.grid(axis='y', linestyle='--', alpha=0.5)
+plt.tight_layout()
+plt.savefig("figures/source_comparison_grouped_bar.png", dpi=300)
+plt.show()
+
+
+# ### Home Assignment Analysis & Statistical Sample-Size Discussion
+# 
+# **Numerical Findings:**
+# - **Techncruncher (Commercial AI / Affiliate Reviews):** Mean Polarity = `0.1912` (std = `0.0624`), Mean Noun Density = `0.2420` (std = `0.0248`).
+# - **Pyfound (Python Software Foundation Institutional Blog):** Mean Polarity = `0.1750` (std = `0.0572`), Mean Noun Density = `0.1797` (std = `0.0205`).
+# - **Observed Differences:** Polarity Difference = `+0.0163`, Noun Density Difference = `+0.0623` (+6.23 percentage points).
+# 
+# **Interpretation & Sample Size Limitations ($N=19$ total, $\sim 10$ per source):**
+# The substantial difference in **mean noun density (+6.23% higher in Techncruncher)** is substantively and statistically meaningful. Commercial review articles feature high nominal density due to frequent mentions of software products, plan tiers, feature lists, and technical terminology ($24.2\%$ of all tokens are nouns). In contrast, institutional foundation announcements rely more heavily on narrative, administrative updates, and committee correspondence ($18.0\%$ noun density), resulting in non-overlapping confidence intervals even with $N=10$ articles per group (large effect size, Cohen's $d > 2.0$). 
+# 
+# Conversely, the difference in **sentiment polarity (+0.0163)** is negligible on a $[-1.0, +1.0]$ scale and falls well within within-group sampling noise ($\sigma pprox 0.06$). With only 10 articles per source, statistical power is insufficient to detect minute sentiment differences ($<0.02$). Detecting a sentiment disparity of this subtle magnitude with $80\%$ statistical power at $lpha=0.05$ would require a sample size exceeding $N \ge 250$ articles per blog. Therefore, while noun density reflects a true stylistic divergence between commercial and institutional blogs, the minor polarity gap cannot be statistically generalized beyond this exploratory sample.
 
 # ---
 # # Deliverables
