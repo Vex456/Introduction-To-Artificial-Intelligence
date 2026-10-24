@@ -1,9 +1,7 @@
-# Introduction to Artificial Intelligence (AI–101L) — Weekly Lab Portfolio
+# Introduction to Artificial Intelligence — Weekly Lab Portfolio
 
 **Instructor:** Dr. Muhammad Awais  
 **Student:** Muhammad Zaryab Attiq  
-**Course Code:** AI–101L  
-**Session:** Fall 2026  
 
 ---
 
