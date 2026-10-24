@@ -15,7 +15,7 @@ app.add_middleware(
 )
 
 
-MODEL_PATH = Path(__file__).parent / "Mymdoel.pkl"
+MODEL_PATH = Path(__file__).parent / "My_Model.pkl"
 with open(MODEL_PATH, "rb") as f:
     model = pickle.load(f)
 

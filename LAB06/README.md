@@ -1,6 +1,6 @@
 # LAB 06 — Diabetes Prediction Web Application
 
-This lab deploys the trained scikit-learn Logistic Regression model (`Mymdoel.pkl`) from Lab 4 as an interactive web service using **FastAPI** and a lightweight web frontend.
+This lab deploys the trained scikit-learn Logistic Regression model (`My_Model.pkl`) from Lab 4 as an interactive web service using **FastAPI** and a lightweight web frontend.
 
 ---
 
@@ -8,7 +8,7 @@ This lab deploys the trained scikit-learn Logistic Regression model (`Mymdoel.pk
 
 - `main.py`: FastAPI backend REST API serving `/predict` and `/health` endpoints.
 - `index.html`: Client-side interface to input patient parameters and view predictions in real-time.
-- `Mymdoel.pkl`: Pre-trained logistic regression classifier serialized with `pickle`.
+- `My_Model.pkl`: Pre-trained logistic regression classifier serialized with `pickle`.
 
 ---
 

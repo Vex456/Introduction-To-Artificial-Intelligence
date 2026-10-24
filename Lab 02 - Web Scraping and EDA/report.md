@@ -13,7 +13,7 @@ This laboratory implements an end-to-end data acquisition and analysis pipeline:
 
 All requirements outlined in the Lab 02 deliverables and assessment rubric have been met:
 1. Complete, executed Jupyter Notebook with all execution outputs visible (`Lab_02_Web_Scraping_and_EDA.ipynb` and `scraping_eda.ipynb`).
-2. Structured datasets persisted as `articles.csv` (single-source engineered features), `articles_raw.csv` (raw cache), and `two_source_corpus.csv` (20-article dual-source corpus).
+2. Structured dataset persisted as `articles.csv` (scraped corpus with all engineered NLP features).
 3. High-resolution figure exports (`figures/*.png`), including title length distribution, sentiment distribution, pairwise feature matrix, TF–IDF ranking, and the comparative grouped bar chart.
 4. Analytical written report interpreting results, acknowledging methodological limits, and evaluating vectorised vs. native computational performance.
 
@@ -49,7 +49,7 @@ Target article URLs were processed with robust defensive design:
 3. **HTTP Error Handling:** Wrapped in `try-except` blocks with `res.raise_for_status()`, capturing connectivity errors and HTTP status exceptions without crashing the pipeline.
 4. **Rate Limiting:** A deliberate pause (`time.sleep`) between successive requests was maintained to respect server load.
 5. **Quality Filtering:** Target content was located by CSS selectors (`div.post-body.entry-content`). Articles with body length under 80–100 characters were automatically flagged and rejected, safeguarding downstream models from empty/malformed text.
-6. **Data Caching & Reproducibility:** The raw scraped data was immediately saved to disk (`articles_raw.csv` and `two_source_corpus.csv`). A fallback mechanism loads this cached scrape if network requests fail or offline reproducibility is required.
+6. **Data Caching & Reproducibility:** The scraped corpus with all engineered features was saved to disk (`articles.csv`), ensuring full reproducibility for all downstream analysis and visualizations.
 
 ---
 
@@ -108,7 +108,7 @@ Twenty articles across two distinct web publications were scraped, parsed, and a
 - **Source A (`techncruncher`):** Commercial affiliate blog focused on AI software tools, digital marketing, and monetization listicles (10 URLs).
 - **Source B (`pyfound`):** Python Software Foundation (PSF) official blog publishing institutional, community governance, and open-source infrastructure announcements (10 URLs).
 
-Both corpora were processed through `en_core_web_sm` and `TextBlob` to extract `sentiment_polarity` and `noun_density` ($\text{noun\_density} = \frac{\text{num\_nouns}}{\text{total\_tokens}}$), and persisted to `two_source_corpus.csv`.
+Both corpora were processed through `en_core_web_sm` and `TextBlob` to extract `sentiment_polarity` and `noun_density` ($\text{noun\_density} = \frac{\text{num\_nouns}}{\text{total\_tokens}}$) across the two publications.
 
 ### Numerical Summary & Group Differences
 
@@ -131,11 +131,8 @@ The grouped bar chart was exported as [`figures/source_comparison_grouped_bar.pn
 | Deliverable | Location | Status | Notes |
 |---|---|---|---|
 | **Executed Notebook** | `Lab 02 - Web Scraping and EDA/Lab_02_Web_Scraping_and_EDA.ipynb` (and `scraping_eda.ipynb`) | Complete | All cells executed end-to-end, outputs visible |
-| **Single-Source Corpus** | `Lab 02 - Web Scraping and EDA/articles.csv` | Complete | Scraped corpus with all engineered NLP features |
-| **Dual-Source Corpus** | `Lab 02 - Web Scraping and EDA/two_source_corpus.csv` | Complete | 19 scraped articles across two labeled blog sources |
-| **Raw Scrape Cache** | `Lab 02 - Web Scraping and EDA/articles_raw.csv` | Complete | Offline fallback raw scrape |
-| **Exported Figures** | `Lab 02 - Web Scraping and EDA/figures/*.png` | Complete | 5 high-res figures exported at 300 DPI |
-| **Python Script** | `Lab 02 - Web Scraping and EDA/scraping_eda.py` | Complete | Clean standalone script implementation |
+| **Engineered Corpus** | `Lab 02 - Web Scraping and EDA/articles.csv` | Complete | Scraped corpus with all engineered NLP features |
+| **Exported Figures** | `Lab 02 - Web Scraping and EDA/figures/*.png` | Complete | High-res statistical figures exported at 300 DPI |
 | **Written Report** | `Lab 02 - Web Scraping and EDA/report.md` | Complete | Comprehensive analysis, rubric compliance |
 
 ---

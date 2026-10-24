@@ -36,4 +36,4 @@ This laboratory covers regression and classification modeling using **scikit-lea
   - Logistic Regression classification with `max_iter=1000`.
   - Accuracy evaluation, Confusion Matrix visualization with Seaborn heatmap.
   - Individual patient probability scoring.
-  - Model serialization to `Mymdoel.pkl` for API integration in LAB06.
+  - Model serialization to `My_Model.pkl` for API integration in LAB06.

@@ -107,6 +107,6 @@ print(f'Prediction: {"Diabetic" if sample_pred == 1 else "Non-Diabetic"} (Class 
 print(f'Probability of Diabetes: {sample_prob:.4f}')
 
 # Persist model for deployment (LAB06)
-with open('Mymdoel.pkl', 'wb') as f:
+with open('My_Model.pkl', 'wb') as f:
     pickle.dump(model, f)
-print('Saved trained model to Mymdoel.pkl for LAB06 web application.')
+print('Saved trained model to My_Model.pkl for LAB06 web application.')
