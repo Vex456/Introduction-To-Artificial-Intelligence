@@ -1,0 +1,33 @@
+# Python virtual environments & packages
+virtual/
+venv/
+.venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Anaconda & Jupyter checkpoints
+anaconda_projects/
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+*/*/.ipynb_checkpoints/
+
+# IDE / Editor configuration
+.vscode/
+.idea/
+
+# Large Kaggle CSV datasets (exceeding standard GitHub file size limits)
+Lab08/train.csv
+Lab08/test.csv
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+
+# Local junction
+lab02
